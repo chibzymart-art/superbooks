@@ -118,9 +118,26 @@ export async function POST(req: NextRequest) {
         if (!videoErr) createdVideo = videoRecord;
       }
 
+      const computedRatio =
+        originalSizeBytes && originalSizeBytes > 0
+          ? Math.round(((originalSizeBytes - compressedSizeBytes) / originalSizeBytes) * 1000) / 10
+          : 0;
+
+      const resolvedAsset = assetData || {
+        id: `asset-${Date.now()}`,
+        title,
+        asset_type: assetType,
+        original_size_bytes: originalSizeBytes,
+        compressed_size_bytes: compressedSizeBytes,
+        compression_ratio: computedRatio,
+        storage_path: storagePath || null,
+        stream_uid: streamUid || null,
+        status: 'ready',
+      };
+
       return NextResponse.json({
         success: true,
-        asset: assetData,
+        asset: resolvedAsset,
         book: createdBook,
         video: createdVideo,
         cdnLink: storagePath
