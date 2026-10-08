@@ -8,14 +8,13 @@ import {
   AlertCircle,
   Download,
   RefreshCw,
-  Sliders,
   Sparkles,
   Cpu,
-  FileCheck,
   Zap,
-  Gauge,
-  ArrowRight,
+  Cloud,
+  ArrowUpRight,
   ShieldCheck,
+  ServerOff,
 } from 'lucide-react';
 import {
   compressBook,
@@ -26,11 +25,16 @@ import {
   generateSampleHeavyVideo,
 } from '@/lib/compression/videoCompressor';
 import {
-  BOOK_CEILING_BYTES,
-  VIDEO_CEILING_BYTES,
   CompressionProgress,
   CompressionResult,
 } from '@/lib/compression/types';
+import {
+  uploadBookToCloud,
+  uploadVideoToCloud,
+  UploadProgress,
+  BookUploadResult,
+  VideoUploadResult,
+} from '@/lib/upload/directCloudUploader';
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -42,24 +46,35 @@ function formatBytes(bytes: number): string {
 
 export default function CompressionSandboxPage() {
   // Book Compressor State
-  const [bookFile, setBookFile] = useState<File | null>(null);
   const [bookProgress, setBookProgress] = useState<CompressionProgress | null>(null);
   const [bookResult, setBookResult] = useState<CompressionResult | null>(null);
   const [isCompressingBook, setIsCompressingBook] = useState(false);
 
+  // Book Direct Cloud Upload State
+  const [bookUploadProgress, setBookUploadProgress] = useState<UploadProgress | null>(null);
+  const [bookUploadResult, setBookUploadResult] = useState<BookUploadResult | null>(null);
+  const [isUploadingBook, setIsUploadingBook] = useState(false);
+
   // Video Compressor State
-  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoProgress, setVideoProgress] = useState<CompressionProgress | null>(null);
   const [videoResult, setVideoResult] = useState<CompressionResult | null>(null);
   const [isCompressingVideo, setIsCompressingVideo] = useState(false);
 
+  // Video Direct Cloud Upload State
+  const [videoUploadProgress, setVideoUploadProgress] = useState<UploadProgress | null>(null);
+  const [videoUploadResult, setVideoUploadResult] = useState<VideoUploadResult | null>(null);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+
   // Benchmark history table
-  const [benchmarkLogs, setBenchmarkLogs] = useState<CompressionResult[]>([]);
+  const [benchmarkLogs, setBenchmarkLogs] = useState<
+    Array<CompressionResult & { cloudDestination?: string; cloudId?: string }>
+  >([]);
 
   // 1-Click Test Sample EPUB
   const handleLoadSampleBook = async () => {
     setIsCompressingBook(true);
     setBookResult(null);
+    setBookUploadResult(null);
     setBookProgress({
       stage: 'analyzing',
       percent: 5,
@@ -71,8 +86,6 @@ export default function CompressionSandboxPage() {
 
     try {
       const { file } = await generateSampleHeavyEpub();
-      setBookFile(file);
-
       const result = await compressBook(file, file.name, (p) => {
         setBookProgress(p);
       });
@@ -92,9 +105,9 @@ export default function CompressionSandboxPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setBookFile(file);
     setIsCompressingBook(true);
     setBookResult(null);
+    setBookUploadResult(null);
 
     try {
       const result = await compressBook(file, file.name, (p) => {
@@ -110,10 +123,41 @@ export default function CompressionSandboxPage() {
     }
   };
 
+  // Dispatch Book Direct to Cloudflare R2
+  const handleDispatchBookR2 = async () => {
+    if (!bookResult) return;
+    setIsUploadingBook(true);
+    setBookUploadResult(null);
+
+    try {
+      const uploadRes = await uploadBookToCloud(
+        bookResult.blob,
+        bookResult.fileName,
+        (progress) => setBookUploadProgress(progress)
+      );
+      setBookUploadResult(uploadRes);
+
+      // Update log table
+      setBenchmarkLogs((prev) =>
+        prev.map((log) =>
+          log.fileName === bookResult.fileName
+            ? { ...log, cloudDestination: 'Cloudflare R2', cloudId: uploadRes.key }
+            : log
+        )
+      );
+    } catch (err: any) {
+      console.error(err);
+      alert('Direct R2 Upload error: ' + err.message);
+    } finally {
+      setIsUploadingBook(false);
+    }
+  };
+
   // 1-Click Test Sample Video
   const handleLoadSampleVideo = async () => {
     setIsCompressingVideo(true);
     setVideoResult(null);
+    setVideoUploadResult(null);
     setVideoProgress({
       stage: 'analyzing',
       percent: 5,
@@ -125,8 +169,6 @@ export default function CompressionSandboxPage() {
 
     try {
       const { file } = await generateSampleHeavyVideo();
-      setVideoFile(file);
-
       const result = await compressVideo(file, file.name, (p) => {
         setVideoProgress(p);
       });
@@ -146,9 +188,9 @@ export default function CompressionSandboxPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setVideoFile(file);
     setIsCompressingVideo(true);
     setVideoResult(null);
+    setVideoUploadResult(null);
 
     try {
       const result = await compressVideo(file, file.name, (p) => {
@@ -164,26 +206,55 @@ export default function CompressionSandboxPage() {
     }
   };
 
+  // Dispatch Video Direct to Cloudflare Stream
+  const handleDispatchVideoStream = async () => {
+    if (!videoResult) return;
+    setIsUploadingVideo(true);
+    setVideoUploadResult(null);
+
+    try {
+      const uploadRes = await uploadVideoToCloud(
+        videoResult.blob,
+        videoResult.fileName,
+        (progress) => setVideoUploadProgress(progress)
+      );
+      setVideoUploadResult(uploadRes);
+
+      // Update log table
+      setBenchmarkLogs((prev) =>
+        prev.map((log) =>
+          log.fileName === videoResult.fileName
+            ? { ...log, cloudDestination: 'Cloudflare Stream', cloudId: uploadRes.streamUid }
+            : log
+        )
+      );
+    } catch (err: any) {
+      console.error(err);
+      alert('Direct Stream Upload error: ' + err.message);
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
   return (
     <div className="space-y-12">
       {/* Header Introduction */}
       <div>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-serif tracking-wider uppercase bg-[#25473A]/10 text-[#25473A] border border-[#25473A]/20 mb-3">
           <Cpu className="w-3.5 h-3.5" />
-          Phase 2 Verification Sandbox
+          Phase 2 &amp; 3 Verification Sandbox
         </div>
         <h1 className="text-3xl md:text-4xl font-serif text-[#1C1917] tracking-tight">
-          Client-Side Compression Benchmark Laboratory
+          Client-Side Compression &amp; Direct-to-Cloud Upload Pipeline
         </h1>
         <p className="mt-2 text-base text-[#78716C] max-w-3xl font-serif leading-relaxed">
-          Test in-memory WebAssembly &amp; Web Worker compression engines live.
-          Verify strict compliance with the <strong className="text-[#9E3E26] font-semibold">Books Ceiling (≤ 1.0 MB)</strong> and <strong className="text-[#25473A] font-semibold">Video Ceiling (≤ 50.0 MB)</strong> before cloud transmission.
+          Compress books (<strong className="text-[#9E3E26] font-semibold">≤ 1.0 MB</strong>) and videos (<strong className="text-[#25473A] font-semibold">≤ 50.0 MB</strong>) in-browser, then dispatch bytes directly to <strong className="text-[#1C1917] font-semibold">Cloudflare R2</strong> and <strong className="text-[#1C1917] font-semibold">Cloudflare Stream</strong> with zero Vercel serverless proxying.
         </p>
       </div>
 
       {/* Dual Station Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* STATION 1: BOOK COMPRESSOR */}
+        {/* STATION 1: BOOK COMPRESSOR & R2 DISPATCH */}
         <div className="bg-white border border-[#E5DFD3] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-[#E5DFD3]">
@@ -230,7 +301,7 @@ export default function CompressionSandboxPage() {
               </div>
             </div>
 
-            {/* Or custom upload */}
+            {/* Custom upload */}
             <div className="mt-4">
               <label
                 htmlFor="book-upload-input"
@@ -248,7 +319,7 @@ export default function CompressionSandboxPage() {
               />
             </div>
 
-            {/* Real-time Progress Gauge */}
+            {/* Real-time Compression Progress */}
             {bookProgress && isCompressingBook && (
               <div className="mt-6 p-4 rounded-xl bg-[#FAF8F5] border border-[#E5DFD3] space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
@@ -267,7 +338,7 @@ export default function CompressionSandboxPage() {
               </div>
             )}
 
-            {/* Verified Result Card */}
+            {/* Verified Result & Cloudflare R2 Dispatch */}
             {bookResult && (
               <div className="mt-6 p-5 rounded-xl bg-[#FAF8F5] border border-[#E5DFD3] space-y-4">
                 <div className="flex items-center justify-between">
@@ -326,15 +397,77 @@ export default function CompressionSandboxPage() {
                     className="inline-flex items-center gap-1 text-[#9E3E26] hover:underline font-serif font-medium"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    Download Optimized EPUB
+                    Download EPUB
                   </a>
+                </div>
+
+                {/* Direct-to-R2 Cloud Upload CTA */}
+                <div className="pt-3 border-t border-[#E5DFD3]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-[#78716C]">
+                      <ServerOff className="w-3.5 h-3.5 text-[#25473A]" />
+                      <span>Zero Vercel Serverless Egress</span>
+                    </div>
+                    <button
+                      id="btn-upload-r2"
+                      onClick={handleDispatchBookR2}
+                      disabled={isUploadingBook || !bookResult.isCompliant}
+                      className="px-3.5 py-1.5 rounded-lg bg-[#1C1917] text-white text-xs font-serif font-medium hover:bg-black transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                    >
+                      {isUploadingBook ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Cloud className="w-3.5 h-3.5 text-[#25473A]" />
+                      )}
+                      Dispatch to Cloudflare R2
+                    </button>
+                  </div>
+
+                  {/* Real-time R2 Upload Progress */}
+                  {bookUploadProgress && isUploadingBook && (
+                    <div className="mt-3 p-3 rounded-lg bg-white border border-[#E5DFD3] space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-serif font-medium text-[#1C1917]">
+                          {bookUploadProgress.message}
+                        </span>
+                        <span className="font-mono text-[#25473A]">
+                          {bookUploadProgress.percent}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#E5DFD3] h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#25473A] h-full transition-all duration-200"
+                          style={{ width: `${bookUploadProgress.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Verified R2 Storage Result */}
+                  {bookUploadResult && (
+                    <div
+                      id="book-r2-verified-card"
+                      className="mt-3 p-3 rounded-lg bg-[#25473A]/10 border border-[#25473A]/30 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2 text-[#25473A] font-serif">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>
+                          <strong>Stored in Cloudflare R2:</strong>{' '}
+                          <code className="font-mono text-[11px]">{bookUploadResult.key}</code>
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] text-[#25473A] bg-white px-2 py-0.5 rounded border border-[#25473A]/20">
+                        {formatBytes(bookUploadResult.bytesUploaded)} Transferred
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* STATION 2: VIDEO COMPRESSOR */}
+        {/* STATION 2: VIDEO COMPRESSOR & STREAM DISPATCH */}
         <div className="bg-white border border-[#E5DFD3] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-[#E5DFD3]">
@@ -381,7 +514,7 @@ export default function CompressionSandboxPage() {
               </div>
             </div>
 
-            {/* Or custom upload */}
+            {/* Custom upload */}
             <div className="mt-4">
               <label
                 htmlFor="video-upload-input"
@@ -399,7 +532,7 @@ export default function CompressionSandboxPage() {
               />
             </div>
 
-            {/* Real-time Progress Gauge */}
+            {/* Real-time Video Compression Progress */}
             {videoProgress && isCompressingVideo && (
               <div className="mt-6 p-4 rounded-xl bg-[#FAF8F5] border border-[#E5DFD3] space-y-2.5">
                 <div className="flex justify-between items-center text-xs">
@@ -418,7 +551,7 @@ export default function CompressionSandboxPage() {
               </div>
             )}
 
-            {/* Verified Result Card */}
+            {/* Verified Video Result & Cloudflare Stream Dispatch */}
             {videoResult && (
               <div className="mt-6 p-5 rounded-xl bg-[#FAF8F5] border border-[#E5DFD3] space-y-4">
                 <div className="flex items-center justify-between">
@@ -477,8 +610,70 @@ export default function CompressionSandboxPage() {
                     className="inline-flex items-center gap-1 text-[#25473A] hover:underline font-serif font-medium"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    Download Standardized MP4
+                    Download MP4
                   </a>
+                </div>
+
+                {/* Direct-to-Stream Cloud Upload CTA */}
+                <div className="pt-3 border-t border-[#E5DFD3]">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-[#78716C]">
+                      <ServerOff className="w-3.5 h-3.5 text-[#25473A]" />
+                      <span>Direct Creator Upload (TUS / Multipart)</span>
+                    </div>
+                    <button
+                      id="btn-upload-stream"
+                      onClick={handleDispatchVideoStream}
+                      disabled={isUploadingVideo || !videoResult.isCompliant}
+                      className="px-3.5 py-1.5 rounded-lg bg-[#25473A] text-white text-xs font-serif font-medium hover:bg-[#1B352B] transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
+                    >
+                      {isUploadingVideo ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Cloud className="w-3.5 h-3.5" />
+                      )}
+                      Dispatch to Cloudflare Stream
+                    </button>
+                  </div>
+
+                  {/* Real-time Stream Upload Progress */}
+                  {videoUploadProgress && isUploadingVideo && (
+                    <div className="mt-3 p-3 rounded-lg bg-white border border-[#E5DFD3] space-y-2">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-serif font-medium text-[#1C1917]">
+                          {videoUploadProgress.message}
+                        </span>
+                        <span className="font-mono text-[#25473A]">
+                          {videoUploadProgress.percent}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#E5DFD3] h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-[#25473A] h-full transition-all duration-200"
+                          style={{ width: `${videoUploadProgress.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Verified Stream Storage Result */}
+                  {videoUploadResult && (
+                    <div
+                      id="video-stream-verified-card"
+                      className="mt-3 p-3 rounded-lg bg-[#25473A]/10 border border-[#25473A]/30 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2 text-[#25473A] font-serif">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>
+                          <strong>Ingested in Cloudflare Stream:</strong>{' '}
+                          <code className="font-mono text-[11px]">{videoUploadResult.streamUid}</code>
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] text-[#25473A] bg-white px-2 py-0.5 rounded border border-[#25473A]/20">
+                        {formatBytes(videoUploadResult.bytesUploaded)} Transferred
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -494,10 +689,10 @@ export default function CompressionSandboxPage() {
           </div>
           <div>
             <h3 className="text-lg font-serif font-medium text-[#1C1917]">
-              Lossless Perception Guarantee &amp; Engineering Standards
+              Lossless Perception Guarantee &amp; Direct Cloud Architecture
             </h3>
             <p className="text-xs text-[#78716C]">
-              How SuperBooks compresses books by 85–95% and videos by 70–90% with zero visible degradation
+              How SuperBooks pairs client-side compression with direct-to-cloud dispatch
             </p>
           </div>
         </div>
@@ -509,17 +704,17 @@ export default function CompressionSandboxPage() {
               150 DPI Retina Scaling
             </div>
             <p className="text-xs text-[#78716C] leading-relaxed">
-              Raw scans often bundle uncompressed 300–600 DPI images. Downsampling to 150 DPI matches the exact pixel pitch of Kindle Oasis and iPad screens, trimming 80% byte weight while text and drawings remain razor sharp.
+              Downsampling raster scans to 150 DPI matches the exact pixel density of e-readers and retina tablets, trimming 80%+ weight while drawings remain pristine.
             </p>
           </div>
 
           <div className="p-4 rounded-xl bg-[#F9F6F0] border border-[#E5DFD3]">
             <div className="flex items-center gap-2 text-sm font-serif font-medium text-[#1C1917] mb-1.5">
-              <ShieldCheck className="w-4 h-4 text-[#25473A]" />
-              Adaptive WebP Encoding
+              <Cloud className="w-4 h-4 text-[#25473A]" />
+              Zero Vercel Compute Egress
             </div>
             <p className="text-xs text-[#78716C] leading-relaxed">
-              Traditional EPUBs embed archaic JPEG/PNG. Converting images to WebP inside the EPUB zip container yields 30–50% superior compression with identical chromatic fidelity and smoother gradients.
+              Presigned R2 PUT URLs and Direct Creator Upload tokens stream bytes straight from the client browser to Cloudflare edge storage, completely avoiding serverless function timeouts and egress fees.
             </p>
           </div>
 
@@ -529,7 +724,7 @@ export default function CompressionSandboxPage() {
               Constant Rate Factor (CRF 23)
             </div>
             <p className="text-xs text-[#78716C] leading-relaxed">
-              Video standardization applies H.264 High Profile with CABAC entropy encoding and CRF 23, dynamically calculating bitrate from clip duration so that short reels and 5-minute interviews both remain crisply capped under 50 MB.
+              Video standardization applies H.264 High Profile with CABAC entropy encoding and CRF 23, dynamically budgeting bitrate so every clip remains crisply capped under 50 MB.
             </p>
           </div>
         </div>
@@ -540,10 +735,10 @@ export default function CompressionSandboxPage() {
         <div className="bg-white border border-[#E5DFD3] rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-serif font-medium text-[#1C1917]">
-              Session Benchmark History
+              Session Benchmark &amp; Dispatch History
             </h3>
             <span className="text-xs font-mono text-[#78716C]">
-              {benchmarkLogs.length} test{benchmarkLogs.length > 1 ? 's' : ''} executed
+              {benchmarkLogs.length} event{benchmarkLogs.length > 1 ? 's' : ''} recorded
             </span>
           </div>
 
@@ -555,8 +750,9 @@ export default function CompressionSandboxPage() {
                   <th className="py-2.5 px-3">Type</th>
                   <th className="py-2.5 px-3 text-right">Original</th>
                   <th className="py-2.5 px-3 text-right">Compressed</th>
-                  <th className="py-2.5 px-3 text-right">Reduction</th>
+                  <th className="py-2.5 px-3 text-right">Saved</th>
                   <th className="py-2.5 px-3 text-center">Status</th>
+                  <th className="py-2.5 px-3 text-right">Cloud Target</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5DFD3]/60">
@@ -581,6 +777,16 @@ export default function CompressionSandboxPage() {
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#25473A]/10 text-[#25473A]">
                         Compliant
                       </span>
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono text-[11px] text-[#25473A]">
+                      {log.cloudDestination ? (
+                        <span className="inline-flex items-center gap-1 font-medium">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {log.cloudDestination}
+                        </span>
+                      ) : (
+                        <span className="text-[#78716C]">Pending Dispatch</span>
+                      )}
                     </td>
                   </tr>
                 ))}
