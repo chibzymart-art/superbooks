@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getBooks } from '@/lib/books';
 import { Metadata } from 'next';
+import { Search } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Library Catalog — Browse African & World Literature',
@@ -51,40 +52,64 @@ export default async function LibraryPage({
       </div>
 
       {/* Filter and Search Controls */}
-      <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center bg-[#F3ECE1] p-4 border border-[#DFD5C6] rounded-xs">
-        {/* Genre Pill Filters */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs font-mono text-[#8E887E] mr-2 uppercase">Genre:</span>
-          {genres.map((g) => {
-            const isActive = selectedGenre === g;
-            return (
-              <Link
-                key={g}
-                href={`/library?genre=${encodeURIComponent(g)}${isFreeOnly ? '&free=true' : ''}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-                className={`text-xs px-3 py-1.5 transition-colors font-medium ${
-                  isActive
-                    ? 'bg-[#1B1A17] text-[#FFFDF9]'
-                    : 'bg-[#FFFDF9] text-[#1B1A17] border border-[#DFD5C6] hover:border-[#1B1A17]'
-                }`}
-              >
-                {g}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Free Toggle and Search */}
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <Link
-            href={`/library?genre=${encodeURIComponent(selectedGenre)}${isFreeOnly ? '' : '&free=true'}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
-            className={`text-xs px-3 py-1.5 border transition-colors font-mono uppercase whitespace-nowrap ${
-              isFreeOnly
-                ? 'bg-[#25473A] text-[#FFFDF9] border-[#25473A]'
-                : 'bg-[#FFFDF9] text-[#5C5850] border-[#DFD5C6] hover:border-[#25473A]'
-            }`}
+      <div className="space-y-4">
+        {/* Search Input Bar */}
+        <form action="/library" method="GET" className="flex gap-2 max-w-md">
+          <input type="hidden" name="genre" value={selectedGenre} />
+          {isFreeOnly && <input type="hidden" name="free" value="true" />}
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E887E]" />
+            <input
+              type="text"
+              name="q"
+              defaultValue={query}
+              placeholder="Search by title, author, or keyword..."
+              className="w-full pl-10 pr-4 py-2.5 bg-[#FFFDF9] border border-[#DFD5C6] text-sm focus:outline-[#9E3E26]"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-5 py-2.5 bg-[#1B1A17] hover:bg-[#9E3E26] text-[#FFFDF9] text-xs font-mono uppercase tracking-wider font-bold transition-colors"
           >
-            {isFreeOnly ? '✓ Free Books Only' : 'Filter: Free Only'}
-          </Link>
+            Search
+          </button>
+        </form>
+
+        <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center bg-[#F3ECE1] p-4 border border-[#DFD5C6] rounded-xs">
+          {/* Genre Pill Filters */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs font-mono text-[#8E887E] mr-2 uppercase">Genre:</span>
+            {genres.map((g) => {
+              const isActive = selectedGenre === g;
+              return (
+                <Link
+                  key={g}
+                  href={`/library?genre=${encodeURIComponent(g)}${isFreeOnly ? '&free=true' : ''}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
+                  className={`text-xs px-3 py-1.5 transition-colors font-medium ${
+                    isActive
+                      ? 'bg-[#1B1A17] text-[#FFFDF9]'
+                      : 'bg-[#FFFDF9] text-[#1B1A17] border border-[#DFD5C6] hover:border-[#1B1A17]'
+                  }`}
+                >
+                  {g}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Free Toggle */}
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <Link
+              href={`/library?genre=${encodeURIComponent(selectedGenre)}${isFreeOnly ? '' : '&free=true'}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
+              className={`text-xs px-3 py-1.5 border transition-colors font-mono uppercase whitespace-nowrap ${
+                isFreeOnly
+                  ? 'bg-[#25473A] text-[#FFFDF9] border-[#25473A]'
+                  : 'bg-[#FFFDF9] text-[#5C5850] border-[#DFD5C6] hover:border-[#25473A]'
+              }`}
+            >
+              {isFreeOnly ? '✓ Free Books Only' : 'Filter: Free Only'}
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -110,7 +135,7 @@ export default async function LibraryPage({
               className="group bg-[#FFFDF9] border border-[#DFD5C6] p-6 rounded-xs shadow-book-spine hover:-translate-y-1 transition-all flex flex-col justify-between"
             >
               <div className="space-y-4">
-                <div className="relative aspect-4/5 w-full overflow-hidden bg-[#F3ECE1] border border-[#DFD5C6]">
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F3ECE1] border border-[#DFD5C6]">
                   <Image
                     src={book.cover_url}
                     alt={book.title}

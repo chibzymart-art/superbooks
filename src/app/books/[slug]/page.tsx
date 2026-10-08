@@ -90,7 +90,7 @@ export default async function BookDetailPage({
       <section className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start border-b border-[#DFD5C6] pb-16">
         {/* Cover Column */}
         <div className="md:col-span-5 lg:col-span-4 flex justify-center">
-          <div className="relative w-64 sm:w-72 aspect-4/5 bg-[#FFFDF9] border border-[#DFD5C6] shadow-book-spine rounded-xs overflow-hidden">
+          <div className="relative w-64 sm:w-72 aspect-[4/5] bg-[#FFFDF9] border border-[#DFD5C6] shadow-book-spine rounded-xs overflow-hidden">
             <Image
               src={book.cover_url}
               alt={book.title}

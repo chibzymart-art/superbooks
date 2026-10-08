@@ -16,10 +16,10 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Column: Asymmetric Editorial Copy */}
             <div className="lg:col-span-7 space-y-8">
-              <div className="inline-flex items-center gap-2 border border-[#DFD5C6] bg-[#F3ECE1] px-3 py-1 text-xs font-mono tracking-widest uppercase text-[#5C5850]">
+              <div className="inline-flex items-center gap-2 border border-[#DFD5C6] bg-[#F3ECE1] px-3.5 py-1 text-xs font-mono tracking-widest uppercase text-[#5C5850]">
                 <span>African & World Diaspora Literature</span>
                 <span className="text-[#9E3E26]">/</span>
-                <span>Open Reading Initiative</span>
+                <span>Open Reading Sanctuary</span>
               </div>
 
               <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#1B1A17] leading-[1.08]">
@@ -34,21 +34,21 @@ export default async function HomePage() {
               </h1>
 
               <p className="text-lg sm:text-xl text-[#5C5850] max-w-2xl leading-relaxed font-normal">
-                SuperBooks is a dedicated reading sanctuary crafted for patient attention. Revisit W.E.B. Du Bois, Bantu mythologies, and classic freedom narratives with realistic page-flip physics, audible paper rustle, and synchronized human audio.
+                SuperBooks is a dedicated reading platform crafted for deliberate attention. Revisit W.E.B. Du Bois, Bantu oral cosmologies, and Frederick Douglass with authentic page-flip physics, audible paper rustle, and synchronized chapter audio.
               </p>
 
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <Link
                   href="/books/the-souls-of-black-folk"
-                  className="inline-flex justify-center items-center px-8 py-4 bg-[#9E3E26] hover:bg-[#822F1B] text-[#FFFDF9] font-medium tracking-wide text-sm uppercase transition-all shadow-md hover:shadow-lg"
+                  className="inline-flex justify-center items-center px-8 py-4 bg-[#9E3E26] hover:bg-[#822F1B] text-[#FFFDF9] font-medium tracking-wide text-xs uppercase transition-all shadow-md hover:shadow-lg"
                 >
                   Start Reading Free
                 </Link>
                 <Link
                   href="/library"
-                  className="inline-flex justify-center items-center px-8 py-4 border border-[#DFD5C6] bg-[#F9F6F0] hover:bg-[#F3ECE1] text-[#1B1A17] font-medium tracking-wide text-sm uppercase transition-colors"
+                  className="inline-flex justify-center items-center px-8 py-4 border border-[#DFD5C6] bg-[#FFFDF9] hover:bg-[#F3ECE1] text-[#1B1A17] font-medium tracking-wide text-xs uppercase transition-colors"
                 >
-                  Explore Catalog ({books.length} Titles)
+                  Browse Library ({books.length} Works)
                 </Link>
               </div>
 
@@ -69,50 +69,57 @@ export default async function HomePage() {
               </div>
             </div>
 
-            {/* Right Column: Physical Stacked Book Cluster */}
-            <div className="lg:col-span-5 relative flex justify-center items-center py-6">
-              <div className="relative w-72 sm:w-80 h-[440px]">
-                {/* Background Shadow Book 3 */}
-                <div className="absolute top-10 -left-6 w-60 h-84 bg-[#E4DCCE] border border-[#DFD5C6] rounded-xs rotate-[-8deg] shadow-book-stacked opacity-80" />
+            {/* Right Column: Physical Layered Book Cluster */}
+            <div className="lg:col-span-5 relative flex justify-center items-center py-8">
+              <div className="relative w-[300px] sm:w-[340px] h-[450px]">
+                {/* Background Book 3: Terracotta Vintage Volume */}
+                <div className="absolute top-12 -left-8 w-[240px] h-[340px] bg-[#9E3E26] border border-[#DFD5C6] rounded-xs -rotate-8 shadow-book-stacked flex flex-col justify-between p-4 text-[#FFFDF9]/80 font-serif">
+                  <div className="text-[10px] font-mono tracking-widest uppercase">Vol. III</div>
+                  <div className="text-sm font-bold leading-tight">Narrative of Frederick Douglass</div>
+                  <div className="text-[10px] font-mono">1845 Classic</div>
+                </div>
                 
-                {/* Background Book 2 */}
-                <div className="absolute top-4 left-4 w-64 h-92 bg-[#25473A] border border-[#DFD5C6] rounded-xs rotate-[5deg] shadow-book-stacked overflow-hidden">
-                  <div className="p-4 text-[#FFFDF9] font-serif text-sm opacity-60">
-                    Myths and Legends of the Bantu
-                  </div>
+                {/* Background Book 2: Laurel Green Hardcover */}
+                <div className="absolute top-6 left-6 w-[250px] h-[370px] bg-[#25473A] border border-[#DFD5C6] rounded-xs rotate-4 shadow-book-stacked flex flex-col justify-between p-5 text-[#FFFDF9]/90 font-serif">
+                  <div className="text-[10px] font-mono tracking-widest uppercase text-[#C68936]">Bantu Lore</div>
+                  <div className="text-base font-bold leading-tight">Myths and Legends of the Bantu</div>
+                  <div className="text-[10px] font-mono text-[#FFFDF9]/60">Oral Cosmologies</div>
                 </div>
 
-                {/* Foreground Hero Book (Du Bois) */}
+                {/* Foreground Hero Book (W.E.B. Du Bois) */}
                 <Link
                   href={`/books/${featuredBook.slug}`}
-                  className="group absolute top-0 left-0 w-68 sm:w-72 h-[410px] bg-[#FFFDF9] border border-[#DFD5C6] rounded-xs shadow-book-spine hover:-translate-y-2 transition-transform duration-300 overflow-hidden block"
+                  className="group absolute top-0 left-0 w-[280px] sm:w-[300px] h-[420px] bg-[#FFFDF9] border border-[#DFD5C6] rounded-xs shadow-book-spine hover:-translate-y-2 transition-transform duration-300 overflow-hidden block z-10"
                 >
-                  {/* Book Spine Simulation */}
-                  <div className="absolute top-0 left-0 bottom-0 w-4 bg-gradient-to-r from-[#1B1A17]/20 via-transparent to-transparent z-10" />
+                  {/* Bookmark Ribbon */}
+                  <div className="absolute -top-1 right-6 w-3.5 h-10 bg-[#9E3E26] shadow-sm z-30 rounded-b-xs" />
+
+                  {/* Spine simulated lighting */}
+                  <div className="absolute top-0 left-0 bottom-0 w-4 bg-gradient-to-r from-[#1B1A17]/25 via-transparent to-transparent z-20 pointer-events-none" />
                   
-                  <div className="relative w-full h-64 overflow-hidden bg-[#F3ECE1]">
+                  <div className="relative w-full h-[250px] overflow-hidden bg-[#F3ECE1]">
                     <Image
                       src={featuredBook.cover_url}
                       alt={featuredBook.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                       priority
-                      sizes="(max-width: 768px) 100vw, 320px"
+                      sizes="300px"
                     />
-                    <div className="absolute top-3 right-3 bg-[#9E3E26] text-[#FFFDF9] text-[10px] uppercase tracking-widest px-2 py-0.5 font-bold">
-                      Free Read
+                    <div className="absolute top-3 left-3 bg-[#25473A] text-[#FFFDF9] text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 font-bold z-20">
+                      Free Volume
                     </div>
                   </div>
 
-                  <div className="p-5 space-y-2 bg-[#FFFDF9]">
-                    <div className="text-[11px] font-mono text-[#9E3E26] uppercase tracking-widest">
-                      Featured Work
+                  <div className="p-5 space-y-1.5 bg-[#FFFDF9]">
+                    <div className="text-[10px] font-mono text-[#9E3E26] uppercase tracking-widest font-bold">
+                      Seminal Pan-African Work
                     </div>
                     <h3 className="font-serif text-xl font-bold text-[#1B1A17] line-clamp-1 group-hover:text-[#9E3E26] transition-colors">
                       {featuredBook.title}
                     </h3>
-                    <p className="text-xs text-[#5C5850]">By {featuredBook.author}</p>
-                    <p className="text-xs text-[#8E887E] line-clamp-2 pt-1">
+                    <p className="text-xs italic text-[#5C5850]">By {featuredBook.author}</p>
+                    <p className="text-xs text-[#8E887E] line-clamp-2 pt-1 leading-relaxed">
                       {featuredBook.description}
                     </p>
                   </div>
@@ -132,8 +139,8 @@ export default async function HomePage() {
               Currently on the Reading Table
             </h2>
           </div>
-          <Link href="/library" className="mt-4 sm:mt-0 text-sm font-medium text-[#9E3E26] hover:underline uppercase tracking-wider">
-            View All Volumes →
+          <Link href="/library" className="mt-4 sm:mt-0 text-xs font-mono font-bold text-[#9E3E26] hover:underline uppercase tracking-widest">
+            View All Volumes ({books.length}) →
           </Link>
         </div>
 
@@ -147,19 +154,19 @@ export default async function HomePage() {
               }`}
             >
               <div className="space-y-4">
-                <div className="relative aspect-4/5 w-full overflow-hidden bg-[#F3ECE1] border border-[#DFD5C6]">
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F3ECE1] border border-[#DFD5C6]">
                   <Image
                     src={book.cover_url}
                     alt={book.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 300px"
+                    sizes="(max-width: 768px) 100vw, 350px"
                   />
                   <div className="absolute top-2 left-2">
                     <span className={`text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 font-bold ${
                       book.is_free ? 'bg-[#25473A] text-[#FFFDF9]' : 'bg-[#C68936] text-[#FFFDF9]'
                     }`}>
-                      {book.is_free ? 'Free Volume' : 'Chapter 1 Preview'}
+                      {book.is_free ? 'Free Complete Read' : 'Chapter 1 Preview'}
                     </span>
                   </div>
                 </div>
@@ -217,7 +224,7 @@ export default async function HomePage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-[#1B1A17] text-sm uppercase tracking-wider">Dual Reading Modes</h4>
-                    <p className="text-xs text-[#5C5850] mt-1">Default smooth scroll with drop caps, or switch to realistic touch-friendly StPageFlip with simulated paper physics.</p>
+                    <p className="text-xs text-[#5C5850] mt-1">Default smooth scroll with drop caps, or switch to realistic touch-friendly StPageFlip with simulated paper physics and acoustic rustle.</p>
                   </div>
                 </div>
 
@@ -227,7 +234,7 @@ export default async function HomePage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-[#1B1A17] text-sm uppercase tracking-wider">Chapter Audio & Sleep Timer</h4>
-                    <p className="text-xs text-[#5C5850] mt-1">Listen to studio recordings or high-fidelity Web SpeechSynthesis voice fallback. Variable speeds (0.75x to 2x) with auto-resume bookmarks.</p>
+                    <p className="text-xs text-[#5C5850] mt-1">Listen to studio recordings or natural Web SpeechSynthesis voice fallback. Variable playback speeds (0.75x to 2x) with auto-resume bookmarks.</p>
                   </div>
                 </div>
 
@@ -245,9 +252,9 @@ export default async function HomePage() {
 
             {/* Interactive Reader Preview Mockup */}
             <div className="bg-[#FFFDF9] border border-[#DFD5C6] p-8 shadow-book-spine rounded-xs relative">
-              <div className="border-b border-[#DFD5C6] pb-4 mb-6 flex justify-between items-center text-xs font-mono text-[#8E887E]">
+              <div className="border-b border-[#DFD5C6] pb-4 mb-6 flex justify-between items-baseline text-xs font-mono text-[#8E887E]">
                 <span>CHAPTER I • OF OUR SPIRITUAL STRIVINGS</span>
-                <span className="text-[#9E3E26]">Page 1 / 18</span>
+                <span className="text-[#9E3E26] font-bold">Leaf 1 / 18</span>
               </div>
               
               <div className="font-serif space-y-4 text-[#1B1A17]">
@@ -291,7 +298,7 @@ export default async function HomePage() {
               60-Second Literary Dispatches
             </h2>
           </div>
-          <Link href="/booktok" className="mt-4 sm:mt-0 text-sm font-medium text-[#9E3E26] hover:underline uppercase tracking-wider">
+          <Link href="/booktok" className="mt-4 sm:mt-0 text-xs font-mono font-bold text-[#9E3E26] hover:underline uppercase tracking-widest">
             Open Vertical Swipe Feed →
           </Link>
         </div>
@@ -301,10 +308,10 @@ export default async function HomePage() {
             <Link
               key={vid.id}
               href={`/booktok#${vid.slug}`}
-              className="group relative aspect-9/16 rounded-xs overflow-hidden border border-[#DFD5C6] shadow-book-spine bg-[#1B1A17] flex flex-col justify-end p-6 text-[#FFFDF9]"
+              className="group relative aspect-[9/16] rounded-xs overflow-hidden border border-[#DFD5C6] shadow-book-spine bg-[#1B1A17] flex flex-col justify-end p-6 text-[#FFFDF9]"
             >
               {/* Background preview image */}
-              <div className="absolute inset-0 opacity-50 group-hover:scale-105 transition-transform duration-700 bg-linear-to-t from-[#1B1A17] via-[#1B1A17]/60 to-transparent">
+              <div className="absolute inset-0 opacity-50 group-hover:scale-105 transition-transform duration-700 bg-gradient-to-t from-[#1B1A17] via-[#1B1A17]/60 to-transparent">
                 <Image
                   src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80"
                   alt={vid.title}

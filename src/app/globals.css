@@ -19,6 +19,15 @@
   --color-ochre: #C68936;
 }
 
+/* Force serif classes to use the elegant Newsreader display font */
+.font-serif {
+  font-family: var(--font-serif), 'Newsreader', Georgia, 'Times New Roman', serif !important;
+}
+
+.font-sans {
+  font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, sans-serif !important;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -31,28 +40,28 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle physical paper deckle shadow */
+/* Physical tactile book shadows */
 .shadow-book-spine {
   box-shadow: 
-    -4px 0 8px -2px rgba(27, 26, 23, 0.15),
-    0 12px 28px -6px rgba(27, 26, 23, 0.22),
-    0 2px 4px rgba(27, 26, 23, 0.08);
+    -5px 0 10px -3px rgba(27, 26, 23, 0.2),
+    0 16px 32px -8px rgba(27, 26, 23, 0.22),
+    0 2px 6px rgba(27, 26, 23, 0.08);
 }
 
 .shadow-book-stacked {
   box-shadow: 
-    -6px 6px 14px -3px rgba(27, 26, 23, 0.18),
-    -12px 12px 24px -6px rgba(27, 26, 23, 0.12);
+    -8px 8px 18px -4px rgba(27, 26, 23, 0.25),
+    -16px 16px 28px -8px rgba(27, 26, 23, 0.15);
 }
 
 /* Reader Typography */
 .drop-cap:first-letter {
   font-family: var(--font-serif), 'Newsreader', Georgia, serif;
   float: left;
-  font-size: 3.8rem;
-  line-height: 0.85;
-  padding-top: 4px;
-  padding-right: 12px;
+  font-size: 4rem;
+  line-height: 0.82;
+  padding-top: 6px;
+  padding-right: 14px;
   padding-bottom: 2px;
   color: #9E3E26;
   font-weight: 700;
@@ -71,8 +80,9 @@ body {
   line-height: 1.8;
   font-style: italic;
   color: #1B1A17;
-  border-left: 2px solid #9E3E26;
-  padding-left: 1rem;
+  border-left: 3px solid #9E3E26;
+  padding-left: 1.25rem;
+  margin-bottom: 2rem;
 }
 
 /* Custom scrollbar styled like a bookmark spine */
