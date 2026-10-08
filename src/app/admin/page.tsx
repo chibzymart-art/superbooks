@@ -15,7 +15,13 @@ import {
   FileText, 
   ShieldCheck, 
   Layers,
-  Sparkles
+  Sparkles,
+  Link2,
+  Copy,
+  X,
+  Play,
+  Check,
+  Globe
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -121,6 +127,16 @@ export default function AdminDashboardPage() {
   const [assets, setAssets] = useState<MediaAsset[]>(INITIAL_SEED_ASSETS);
   const [activeTab, setActiveTab] = useState<'all' | 'books' | 'videos'>('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedInspectAsset, setSelectedInspectAsset] = useState<MediaAsset | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = (link: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(link);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
 
   useEffect(() => {
     async function loadAssets() {
@@ -319,6 +335,7 @@ export default function AdminDashboardPage() {
                   <th className="py-3 px-4">Compressed Size</th>
                   <th className="py-3 px-4">Reduction</th>
                   <th className="py-3 px-4">Storage Destination</th>
+                  <th className="py-3 px-4 text-center">Unique CDN Link</th>
                   <th className="py-3 px-4 text-right">Status</th>
                 </tr>
               </thead>
@@ -361,6 +378,16 @@ export default function AdminDashboardPage() {
                           <span className="text-[#9E3E26] font-semibold">Cloudflare Stream (HLS)</span>
                         )}
                       </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          id={`btn-inspect-${asset.id}`}
+                          onClick={() => setSelectedInspectAsset(asset)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#EBE3D5] hover:bg-[#DFD5C6] text-[#1B1A17] font-semibold text-[11px] transition-colors shadow-2xs cursor-pointer"
+                        >
+                          <Link2 className="w-3 h-3 text-[#9E3E26]" />
+                          <span>Inspect CDN</span>
+                        </button>
+                      </td>
                       <td className="py-3.5 px-4 text-right">
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#25473A] bg-[#25473A]/10 px-2 py-0.5 rounded">
                           <CheckCircle2 className="w-3 h-3" /> Ready
@@ -374,6 +401,116 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Cloudflare Unique CDN Link Inspector Modal */}
+      {selectedInspectAsset && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div
+            id="cdn-link-inspector-modal"
+            className="bg-[#F9F6F0] border border-[#DFD5C6] rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200"
+          >
+            <div className="flex items-start justify-between pb-3 border-b border-[#DFD5C6]">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-[#25473A]/10 text-[#25473A] border border-[#25473A]/20">
+                  {selectedInspectAsset.asset_type === 'book' ? 'Cloudflare R2 Object' : 'Cloudflare Stream Asset'}
+                </span>
+                <h3 className="text-lg font-serif font-medium text-[#1B1A17] mt-1.5">
+                  {selectedInspectAsset.title}
+                </h3>
+              </div>
+              <button
+                id="btn-close-modal"
+                onClick={() => setSelectedInspectAsset(null)}
+                className="p-1 rounded-lg text-[#5C5850] hover:text-[#1B1A17] hover:bg-[#EBE3D5] transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs font-serif">
+              {/* Canonical API Resolver */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#DFD5C6] space-y-1.5">
+                <div className="text-[11px] font-medium text-[#5C5850] flex items-center justify-between">
+                  <span>Canonical Edge Resolver (API)</span>
+                  <span className="font-mono text-[#25473A]">Active CDN Node</span>
+                </div>
+                <div className="flex items-center justify-between gap-2 p-2 rounded bg-[#F9F6F0] border border-[#E5DFD3] font-mono text-[11px] text-[#1B1A17]">
+                  <span className="truncate">
+                    {selectedInspectAsset.asset_type === 'book'
+                      ? `/api/media/${selectedInspectAsset.storage_path || 'books/the-souls-of-black-folk/manuscript-compressed.epub'}`
+                      : `/api/stream/${selectedInspectAsset.stream_uid || 'stream_cf_mythology_01'}`}
+                  </span>
+                  <button
+                    id="btn-copy-unique-link"
+                    onClick={() =>
+                      handleCopyLink(
+                        selectedInspectAsset.asset_type === 'book'
+                          ? `${typeof window !== 'undefined' ? window.location.origin : ''}/api/media/${selectedInspectAsset.storage_path || 'books/the-souls-of-black-folk/manuscript-compressed.epub'}`
+                          : `${typeof window !== 'undefined' ? window.location.origin : ''}/api/stream/${selectedInspectAsset.stream_uid || 'stream_cf_mythology_01'}`
+                      )
+                    }
+                    className="p-1 rounded hover:bg-[#DFD5C6] text-[#5C5850] hover:text-[#1B1A17] transition-colors shrink-0 cursor-pointer"
+                    title="Copy Link"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-[#25473A]" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Direct Streaming / Download Link */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#DFD5C6] space-y-1.5">
+                <div className="text-[11px] font-medium text-[#5C5850]">
+                  Direct Streaming Link (Auto-Redirect)
+                </div>
+                <div className="p-2 rounded bg-[#F9F6F0] border border-[#E5DFD3] font-mono text-[11px] text-[#9E3E26] truncate">
+                  {selectedInspectAsset.asset_type === 'book'
+                    ? `/api/media/${selectedInspectAsset.storage_path || 'books/the-souls-of-black-folk/manuscript-compressed.epub'}?redirect=true`
+                    : `/api/stream/${selectedInspectAsset.stream_uid || 'stream_cf_mythology_01'}?redirect=true`}
+                </div>
+              </div>
+
+              {/* CDN Architecture Metrics */}
+              <div className="grid grid-cols-3 gap-2.5 text-center font-mono">
+                <div className="p-2.5 rounded-lg bg-white border border-[#DFD5C6]">
+                  <div className="text-[10px] text-[#5C5850]">Edge Network</div>
+                  <div className="text-xs font-semibold text-[#1B1A17] mt-0.5">330+ Cities</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white border border-[#DFD5C6]">
+                  <div className="text-[10px] text-[#5C5850]">Token Expiry</div>
+                  <div className="text-xs font-semibold text-[#25473A] mt-0.5">15 Min Rolling</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white border border-[#DFD5C6]">
+                  <div className="text-[10px] text-[#5C5850]">Egress Bandwidth</div>
+                  <div className="text-xs font-semibold text-[#25473A] mt-0.5">$0.00 Egress</div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  onClick={() => setSelectedInspectAsset(null)}
+                  className="px-4 py-2 rounded-xl border border-[#DFD5C6] text-xs font-serif text-[#5C5850] hover:bg-[#EBE3D5] transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+                <a
+                  id="btn-test-playback"
+                  href={
+                    selectedInspectAsset.asset_type === 'book'
+                      ? `/api/media/${selectedInspectAsset.storage_path || 'books/the-souls-of-black-folk/manuscript-compressed.epub'}?redirect=true`
+                      : `/booktok`
+                  }
+                  target="_blank"
+                  className="px-4 py-2 rounded-xl bg-[#9E3E26] hover:bg-[#83331F] text-white text-xs font-serif font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <Play className="w-3 h-3 fill-current" />
+                  <span>Test Live Link Resolution</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

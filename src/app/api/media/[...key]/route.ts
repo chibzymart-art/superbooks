@@ -11,6 +11,7 @@ export async function GET(
     const { key } = await params;
     const mediaKey = key.join('/');
     const bookSlug = req.nextUrl.searchParams.get('book');
+    const shouldRedirect = req.nextUrl.searchParams.get('redirect') === 'true';
 
     if (bookSlug) {
       const book = await getBookBySlug(bookSlug);
@@ -32,10 +33,28 @@ export async function GET(
     // Generate short-lived signed URL (15 minutes expiry)
     const signedUrl = await getR2PresignedDownloadUrl(mediaKey, 900);
 
-    return NextResponse.json({
-      url: signedUrl,
-      expiresIn: 900,
-    });
+    if (shouldRedirect) {
+      return NextResponse.redirect(signedUrl, 307);
+    }
+
+    return NextResponse.json(
+      {
+        key: mediaKey,
+        signedUrl,
+        url: signedUrl,
+        provider: 'cloudflare-r2',
+        uniqueLink: `/api/media/${mediaKey}`,
+        directStreamUrl: `/api/media/${mediaKey}?redirect=true`,
+        expiresInSeconds: 900,
+        egressCost: '$0.00 (Zero Egress R2 Agreement)',
+        cdnEdge: 'Cloudflare Global Anycast Network (330+ Cities)',
+      },
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=900, stale-while-revalidate=60',
+        },
+      }
+    );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
