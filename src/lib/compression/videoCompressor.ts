@@ -95,9 +95,16 @@ export async function compressVideo(
   const objectUrl = URL.createObjectURL(file);
   videoElement.src = objectUrl;
 
-  await new Promise<void>((resolve, reject) => {
-    videoElement.onloadedmetadata = () => resolve();
-    videoElement.onerror = () => reject(new Error('Failed to load video metadata'));
+  await new Promise<void>((resolve) => {
+    const timer = setTimeout(() => resolve(), 800);
+    videoElement.onloadedmetadata = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    videoElement.onerror = () => {
+      clearTimeout(timer);
+      resolve();
+    };
   });
 
   const duration = videoElement.duration || 30;
