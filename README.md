@@ -1,39 +1,53 @@
-# SuperBooks — Production Reading Platform
+# SuperBooks — Production Reading Platform & Media Compression Pipeline
 
-SuperBooks is an independent, studio-crafted digital reading platform built for Pan-African and world literature. Designed with a warm editorial bookshop aesthetic, tactile dual-mode reading (smooth continuous scroll and physical page flip), synchronized chapter audio narration, and short-form vertical Booktok video dispatches.
+SuperBooks is an independent, studio-crafted digital reading platform built for Pan-African and world literature. Designed with a warm editorial bookshop aesthetic, tactile dual-mode reading (smooth continuous scroll and physical page flip), synchronized chapter audio narration, short-form vertical Booktok video dispatches, and a client-side media compression and direct-to-cloud upload pipeline.
 
 ---
 
 ## 🏛 Architecture & Tech Stack
 
-- **Framework**: Next.js 15 (App Router, Server Components for maximum SEO, React 19, TypeScript)
+- **Framework**: Next.js 16 (Turbopack, App Router, Server Components for maximum SEO, React 19, TypeScript)
 - **Styling**: Tailwind CSS with custom editorial tokens (paper backgrounds, Newsreader serif typography, Plus Jakarta Sans body, deckle edge shadows, zero generic purple/blue gradients)
 - **Database & Auth**: Supabase (PostgreSQL 16, Row Level Security enabled on all tables, auth cookie helpers)
-- **Object Storage**: Cloudflare R2 (S3-compatible, direct browser-to-bucket presigned uploads for large PDFs, short-lived signed URLs for authenticated readers)
-- **Video Delivery**: Cloudflare Stream (Adaptive HLS/DASH video delivery for vertical Booktok reels)
+- **Object Storage**: Cloudflare R2 (S3-compatible, direct browser-to-bucket presigned uploads for books up to $\le 1\text{ MB}$, short-lived signed URLs with 15-minute rolling TTL for authenticated readers, $\$0.00$ egress fees)
+- **Video Delivery**: Cloudflare Stream (Adaptive HLS/DASH video delivery for vertical Booktok reels compressed to $\le 50\text{ MB}$)
 - **Deployment**: Vercel CI/CD + GitHub Actions
 
 ---
 
-## 🚀 Key Features
+## ⚡ 7-Phase Media Compression & Direct Upload Architecture
 
-1. **Dual Reading Engine**:
-   - **Smooth Scroll**: Seamless vertical reading with drop caps, typography size controls, and scroll progress tracking.
-   - **Page Flip**: Tactile physical book simulation with realistic page curvature, keyboard navigation (arrow keys), and Web Audio API synthesized paper rustle sound.
-2. **Synchronized Chapter Audio**:
-   - Audio player bar with variable speed controls (`0.75x`, `1.0x`, `1.25x`, `1.5x`, `2.0x`), sleep timer (`5m`, `15m`, `30m`), and bookmark resume.
-   - Automatically uses uploaded audio if provided; falls back gracefully to Web SpeechSynthesis API with natural pacing.
-3. **Server-Side Access Gating**:
-   - Visitors can browse the entire library catalog and read full books marked `is_free`.
-   - For members/premium titles, Chapter 1 is fully server-rendered (SSR) for search crawlers and previews.
-   - Chapter 2 onward is protected on the server—returning an editorial subscription gate if unauthenticated.
-4. **Vertical Booktok Reel Feed (`/booktok`)**:
-   - Mobile-first snap-scroll vertical video feed with Cloudflare Stream playback, like counter, and direct "Read Book" links.
-5. **Curator Admin Dashboard (`/admin`)**:
-   - Publish books, attach chapter audio, upload video episodes, and review community reports.
-   - **Mandatory `rights_status` validation**: Publishing is strictly blocked until positive copyright or licensing status is declared.
-6. **Community Margin Notes (`/community`)**:
-   - Threaded discussions linked to catalog books, likes, and moderation reporting.
+1. **Phase 1: Admin Auth Gate & Media Database Schema**:
+   - `public.media_assets` table tracking original file size, compressed file size, compression duration, storage path, stream UID, rights status, and verification state.
+   - Curator Admin Dashboard (`/admin`) displaying active live ingestion metrics and media asset registry.
+
+2. **Phase 2: Client-Side Compression Engines**:
+   - **Books ($\le 1\text{ MB}$ Visually Lossless)**: Decompresses EPUB/PDF archive, losslessly compresses embedded raster assets (WebP/JPEG 82% quality), strips orphaned XML/manifest debris, minifies HTML/CSS, and repacks into a compliant lightweight manuscript.
+   - **Videos ($\le 50\text{ MB}$ Visually Lossless)**: Standardizes resolution to 1080x1920 (9:16 vertical), adapts video bitrate (2.5 Mbps target, max 3.2 Mbps), 128 kbps AAC stereo, fast decode profile, eliminating oversized payload issues while retaining pristine quality.
+
+3. **Phase 3: Direct-to-Cloud Upload Pipeline**:
+   - **Browser-to-R2**: Generates presigned S3/R2 `PUT` URLs; browser uploads directly to Cloudflare R2 without passing through or burdening Vercel serverless function body limits (4.5 MB ceiling bypassed).
+   - **Browser-to-Stream**: Requests Direct Creator Upload tickets via Cloudflare Stream API; browser pushes directly to Cloudflare edge ingest.
+
+4. **Phase 4: Unified Admin Ingestion Station UI (`/admin/upload`)**:
+   - Editorial drag-and-drop ingestion desk with real-time 3-stage visual progress:
+     - Stage 1: File Analysis & Magic Byte Verification.
+     - Stage 2: In-Browser Compression (megabytes saved counter, compression ratio).
+     - Stage 3: Direct-to-Cloud Uploading & Supabase registration.
+   - Comprehensive book and video metadata form with rights validation (`Public Domain`, `Licensed`, `Creative Commons`).
+
+5. **Phase 5: Cloudflare CDN & Unique Link Generation Engine**:
+   - **Canonical Media Resolver (`/api/media/[...key]`)**: Generates rolling signed tokens, 15-minute TTL, and auto-redirect support (`?redirect=true`) under Cloudflare Zero-Egress agreement.
+   - **Canonical Stream Resolver (`/api/stream/[uid]`)**: Resolves adaptive HLS (`.m3u8`), MPEG-DASH (`.mpd`), and iframe embed codes across 330+ Anycast edge cities.
+   - **CDN Inspector Modal**: Real-time link verification, copy-to-clipboard, and live endpoint testing.
+
+6. **Phase 6: BookTok & Sanctuary Reader Playback Integration**:
+   - **BookTok Feed (`/booktok`)**: Cloudflare Stream CDN integration with active edge playback (`readyState: 4`), mute toggle, keyboard navigation (`ArrowUp`/`ArrowDown`), and CDN inspector drawer.
+   - **Sanctuary Reader (`/read/[slug]/[chapter]`)**: Cloudflare R2 delivery telemetry badge (`≤1 MB Lossless`), Continuous Scroll and 3D Physical Page-Flip modes, drop-caps, and synchronized audio narration bar.
+
+7. **Phase 7: Live Production Deployment, E2E Smoke Test & Audit**:
+   - Deployed on Vercel at [superbooks-seven.vercel.app](https://superbooks-seven.vercel.app).
+   - Automated end-to-end browser verification across all endpoints and workflows.
 
 ---
 
@@ -55,14 +69,9 @@ Fill in your credentials for Supabase and Cloudflare R2/Stream. (If credentials 
 Execute the migrations located in `/supabase/migrations/`:
 - `20261008000001_initial_schema.sql`: Tables, relations, triggers, and Row Level Security policies.
 - `20261008000002_seed_demo_data.sql`: 5 curated public domain books and 3 Booktok episodes.
+- `20261008000003_media_compression_schema.sql`: `media_assets` table and triggers.
 
-### 4. Create First Admin User
-Run the bootstrap script to create or elevate an admin account:
-```bash
-npx tsx scripts/seed-admin.ts admin@superbooks.studio SuperBooksAdmin2026! "SuperBooks Curator"
-```
-
-### 5. Launch Development Server
+### 4. Launch Development Server
 ```bash
 npm run dev
 ```
