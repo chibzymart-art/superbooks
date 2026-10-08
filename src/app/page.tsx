@@ -16,13 +16,13 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             {/* Left Column: Asymmetric Editorial Copy */}
             <div className="lg:col-span-7 space-y-8">
-              <div className="inline-flex items-center gap-2 border border-[#DFD5C6] bg-[#F3ECE1] px-3.5 py-1 text-xs font-mono tracking-widest uppercase text-[#5C5850]">
+              <div className="inline-flex flex-wrap items-center gap-1.5 sm:gap-2 border border-[#DFD5C6] bg-[#F3ECE1] px-3 py-1 text-[10px] sm:text-xs font-mono tracking-wider sm:tracking-widest uppercase text-[#5C5850]">
                 <span>African & World Diaspora Literature</span>
                 <span className="text-[#9E3E26]">/</span>
                 <span>Open Reading Sanctuary</span>
               </div>
 
-              <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#1B1A17] leading-[1.08]">
+              <h1 className="font-serif text-3xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#1B1A17] leading-[1.1] sm:leading-[1.08] break-words">
                 Where African <br className="hidden sm:inline" />
                 <span className="italic font-normal">thought</span> meets the <br className="hidden sm:inline" />
                 tactile <span className="relative inline-block text-[#9E3E26]">
@@ -33,38 +33,38 @@ export default async function HomePage() {
                 </span>.
               </h1>
 
-              <p className="text-lg sm:text-xl text-[#5C5850] max-w-2xl leading-relaxed font-normal">
+              <p className="text-base sm:text-xl text-[#5C5850] max-w-2xl leading-relaxed font-normal">
                 SuperBooks is a dedicated reading platform crafted for deliberate attention. Revisit W.E.B. Du Bois, Bantu oral cosmologies, and Frederick Douglass with authentic page-flip physics, audible paper rustle, and synchronized chapter audio.
               </p>
 
               <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <Link
                   href="/books/the-souls-of-black-folk"
-                  className="inline-flex justify-center items-center px-8 py-4 bg-[#9E3E26] hover:bg-[#822F1B] text-[#FFFDF9] font-medium tracking-wide text-xs uppercase transition-all shadow-md hover:shadow-lg"
+                  className="inline-flex justify-center items-center px-6 sm:px-8 py-3.5 sm:py-4 bg-[#9E3E26] hover:bg-[#822F1B] text-[#FFFDF9] font-medium tracking-wide text-xs uppercase transition-all shadow-md hover:shadow-lg"
                 >
                   Start Reading Free
                 </Link>
                 <Link
                   href="/library"
-                  className="inline-flex justify-center items-center px-8 py-4 border border-[#DFD5C6] bg-[#FFFDF9] hover:bg-[#F3ECE1] text-[#1B1A17] font-medium tracking-wide text-xs uppercase transition-colors"
+                  className="inline-flex justify-center items-center px-6 sm:px-8 py-3.5 sm:py-4 border border-[#DFD5C6] bg-[#FFFDF9] hover:bg-[#F3ECE1] text-[#1B1A17] font-medium tracking-wide text-xs uppercase transition-colors"
                 >
                   Browse Library ({books.length} Works)
                 </Link>
               </div>
 
               {/* Handcrafted Microcopy Metrics */}
-              <div className="pt-6 grid grid-cols-3 gap-6 border-t border-[#DFD5C6] max-w-lg">
+              <div className="pt-6 grid grid-cols-3 gap-2 sm:gap-6 border-t border-[#DFD5C6] max-w-lg">
                 <div>
-                  <div className="font-serif text-2xl font-bold text-[#1B1A17]">100%</div>
-                  <div className="text-xs text-[#5C5850] uppercase tracking-wider font-mono">Server-Rendered</div>
+                  <div className="font-serif text-xl sm:text-2xl font-bold text-[#1B1A17]">100%</div>
+                  <div className="text-[9px] sm:text-xs text-[#5C5850] uppercase tracking-wider font-mono leading-tight">Server-Rendered</div>
                 </div>
                 <div>
-                  <div className="font-serif text-2xl font-bold text-[#1B1A17]">0</div>
-                  <div className="text-xs text-[#5C5850] uppercase tracking-wider font-mono">Sign-up for Free Books</div>
+                  <div className="font-serif text-xl sm:text-2xl font-bold text-[#1B1A17]">0</div>
+                  <div className="text-[9px] sm:text-xs text-[#5C5850] uppercase tracking-wider font-mono leading-tight">Sign-up for Free</div>
                 </div>
                 <div>
-                  <div className="font-serif text-2xl font-bold text-[#1B1A17]">Dual</div>
-                  <div className="text-xs text-[#5C5850] uppercase tracking-wider font-mono">Scroll & Flip Modes</div>
+                  <div className="font-serif text-xl sm:text-2xl font-bold text-[#1B1A17]">Dual</div>
+                  <div className="text-[9px] sm:text-xs text-[#5C5850] uppercase tracking-wider font-mono leading-tight">Scroll & Flip Modes</div>
                 </div>
               </div>
             </div>

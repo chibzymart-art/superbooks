@@ -113,7 +113,7 @@ export function AudioPlayerBar({ audioKey, textToSpeak, title, chapterNumber }: 
   };
 
   return (
-    <div className="bg-[#FFFDF9] border border-[#DFD5C6] shadow-md p-4 rounded-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="bg-[#FFFDF9] border border-[#DFD5C6] shadow-md p-3 sm:p-4 rounded-xs flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
       {/* Audio element for uploaded key */}
       {audioKey && (
         <audio
@@ -126,20 +126,20 @@ export function AudioPlayerBar({ audioKey, textToSpeak, title, chapterNumber }: 
       )}
 
       {/* Track Details */}
-      <div className="flex items-center gap-3 w-full sm:w-auto">
+      <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto min-w-0">
         <button
           onClick={togglePlay}
-          className="w-10 h-10 rounded-full bg-[#9E3E26] hover:bg-[#822F1B] text-[#FFFDF9] flex items-center justify-center shrink-0 transition-colors shadow-xs"
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#9E3E26] hover:bg-[#822F1B] text-[#FFFDF9] flex items-center justify-center shrink-0 transition-colors shadow-xs"
           title={isPlaying ? 'Pause Narration' : 'Play Narration'}
         >
-          {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
+          {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
         </button>
 
-        <div className="truncate">
-          <div className="text-xs font-mono uppercase tracking-widest text-[#9E3E26] font-bold">
+        <div className="truncate min-w-0 flex-1">
+          <div className="text-[10px] sm:text-xs font-mono uppercase tracking-wider text-[#9E3E26] font-bold">
             {isUsingTTS ? 'SpeechSynthesis Narration' : 'Studio Master Audio'}
           </div>
-          <div className="text-sm font-serif font-bold text-[#1B1A17] truncate">
+          <div className="text-xs sm:text-sm font-serif font-bold text-[#1B1A17] truncate">
             Chapter {chapterNumber}: {title}
           </div>
         </div>
@@ -147,7 +147,7 @@ export function AudioPlayerBar({ audioKey, textToSpeak, title, chapterNumber }: 
 
       {/* Progress & Time */}
       {!isUsingTTS && duration > 0 && (
-        <div className="w-full sm:w-64 flex items-center gap-2 text-xs font-mono text-[#5C5850]">
+        <div className="w-full sm:w-64 flex items-center gap-2 text-[11px] sm:text-xs font-mono text-[#5C5850]">
           <span>{formatTime(currentTime)}</span>
           <input
             type="range"
@@ -166,10 +166,10 @@ export function AudioPlayerBar({ audioKey, textToSpeak, title, chapterNumber }: 
       )}
 
       {/* Controls: Speed & Sleep Timer */}
-      <div className="flex items-center gap-4 text-xs font-mono text-[#5C5850] self-end sm:self-auto">
+      <div className="flex items-center gap-2 sm:gap-4 text-xs font-mono text-[#5C5850] self-end sm:self-auto shrink-0">
         {/* Speed Selector */}
-        <div className="flex items-center gap-1 border border-[#DFD5C6] px-2 py-1 bg-[#F9F6F0] rounded-xs">
-          <span className="text-[10px] text-[#8E887E]">SPEED:</span>
+        <div className="flex items-center gap-1 border border-[#DFD5C6] px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#F9F6F0] rounded-xs text-[11px] sm:text-xs">
+          <span className="text-[9px] sm:text-[10px] text-[#8E887E]">SPEED:</span>
           <select
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))}
@@ -184,8 +184,8 @@ export function AudioPlayerBar({ audioKey, textToSpeak, title, chapterNumber }: 
         </div>
 
         {/* Sleep Timer */}
-        <div className="flex items-center gap-1 border border-[#DFD5C6] px-2 py-1 bg-[#F9F6F0] rounded-xs">
-          <Moon size={12} className="text-[#9E3E26]" />
+        <div className="flex items-center gap-1 border border-[#DFD5C6] px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#F9F6F0] rounded-xs text-[11px] sm:text-xs">
+          <Moon size={11} className="text-[#9E3E26]" />
           <select
             value={sleepTimerMinutes || ''}
             onChange={(e) => setSleepTimer(e.target.value ? Number(e.target.value) : null)}

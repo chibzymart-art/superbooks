@@ -94,25 +94,25 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
       )}
 
       {/* Reader Control Header */}
-      <header className="sticky top-0 z-40 border-b border-[#DFD5C6]/60 backdrop-blur-md bg-inherit/90 px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 border-b border-[#DFD5C6]/60 backdrop-blur-md bg-inherit/90 px-3 sm:px-4 py-2 sm:py-3">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4">
           {/* Back to book overview */}
           <Link
             href={`/books/${book.slug}`}
-            className="text-xs font-mono uppercase tracking-wider text-[#8E887E] hover:text-[#9E3E26] flex items-center gap-1 transition-colors"
+            className="text-xs font-mono uppercase tracking-wider text-[#8E887E] hover:text-[#9E3E26] flex items-center gap-1 transition-colors min-w-0 shrink"
+            title={`Back to ${book.title}`}
           >
-            <ArrowLeft size={14} />
-            <span className="hidden sm:inline">Volume Index:</span>
-            <span className="font-bold text-[#1B1A17]">{book.title}</span>
+            <ArrowLeft size={14} className="shrink-0" />
+            <span className="font-bold text-[#1B1A17] truncate max-w-[90px] xs:max-w-[140px] sm:max-w-xs md:max-w-md">{book.title}</span>
           </Link>
 
           {/* Reading Mode Switcher & Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Mode Switcher Buttons */}
             <div className="flex items-center border border-[#DFD5C6] bg-inherit rounded-xs p-0.5 text-xs font-mono">
               <button
                 onClick={() => handleModeChange('scroll')}
-                className={`px-3 py-1 flex items-center gap-1.5 transition-colors ${
+                className={`p-1 sm:px-3 sm:py-1 flex items-center gap-1.5 transition-colors ${
                   readingMode === 'scroll'
                     ? 'bg-[#1B1A17] text-[#FFFDF9] font-bold'
                     : 'text-[#5C5850] hover:text-[#1B1A17]'
@@ -120,11 +120,11 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
                 title="Continuous Smooth Scroll"
               >
                 <ScrollText size={13} />
-                <span className="hidden md:inline">Scroll</span>
+                <span className="hidden sm:inline">Scroll</span>
               </button>
               <button
                 onClick={() => handleModeChange('flip')}
-                className={`px-3 py-1 flex items-center gap-1.5 transition-colors ${
+                className={`p-1 sm:px-3 sm:py-1 flex items-center gap-1.5 transition-colors ${
                   readingMode === 'flip'
                     ? 'bg-[#9E3E26] text-[#FFFDF9] font-bold'
                     : 'text-[#5C5850] hover:text-[#1B1A17]'
@@ -132,7 +132,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
                 title="Physical Page Flip"
               >
                 <BookOpen size={13} />
-                <span className="hidden md:inline">Page Flip</span>
+                <span className="hidden sm:inline">Flip</span>
               </button>
             </div>
 
@@ -162,17 +162,17 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
             <div className="flex items-center border border-[#DFD5C6] rounded-xs p-1 gap-1">
               <button
                 onClick={() => handleThemeChange('paper')}
-                className={`w-4 h-4 rounded-full bg-[#F9F6F0] border border-[#DFD5C6] ${theme === 'paper' ? 'ring-2 ring-[#9E3E26]' : ''}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#F9F6F0] border border-[#DFD5C6] ${theme === 'paper' ? 'ring-2 ring-[#9E3E26]' : ''}`}
                 title="Paper Cream"
               />
               <button
                 onClick={() => handleThemeChange('sepia')}
-                className={`w-4 h-4 rounded-full bg-[#F4ECD8] border border-[#D9CDB8] ${theme === 'sepia' ? 'ring-2 ring-[#9E3E26]' : ''}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#F4ECD8] border border-[#D9CDB8] ${theme === 'sepia' ? 'ring-2 ring-[#9E3E26]' : ''}`}
                 title="Warm Sepia"
               />
               <button
                 onClick={() => handleThemeChange('night')}
-                className={`w-4 h-4 rounded-full bg-[#1C1B19] border border-[#444] ${theme === 'night' ? 'ring-2 ring-[#9E3E26]' : ''}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#1C1B19] border border-[#444] ${theme === 'night' ? 'ring-2 ring-[#9E3E26]' : ''}`}
                 title="Night Ink"
               />
             </div>
@@ -180,7 +180,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
             {/* Quick Bookmark Button */}
             <button
               onClick={handleSaveBookmark}
-              className="p-1.5 border border-[#DFD5C6] hover:border-[#9E3E26] rounded-xs text-xs transition-colors"
+              className="p-1 sm:p-1.5 border border-[#DFD5C6] hover:border-[#9E3E26] rounded-xs text-xs transition-colors"
               title="Add Bookmark"
             >
               {bookmarkSaved ? <Check size={14} className="text-[#25473A]" /> : <Bookmark size={14} />}
@@ -190,7 +190,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
       </header>
 
       {/* Main Reading View Area */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-16">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-16 pb-28">
         {readingMode === 'flip' ? (
           <PageFlipView
             contentHtml={chapter.content_html || ''}
@@ -205,7 +205,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
               <div className="text-xs font-mono tracking-widest text-[#9E3E26] uppercase font-bold">
                 Volume {book.title} • Chapter {chapter.number}
               </div>
-              <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight">
+              <h1 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight break-words">
                 {chapter.title}
               </h1>
               <p className="text-sm italic text-[#5C5850]">By {book.author}</p>
@@ -220,11 +220,11 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
         )}
 
         {/* Chapter Navigation Footer */}
-        <div className="mt-16 pt-8 border-t border-[#DFD5C6] flex items-center justify-between text-xs font-mono uppercase">
+        <div className="mt-12 sm:mt-16 pt-8 border-t border-[#DFD5C6] flex items-center justify-between text-[11px] sm:text-xs font-mono uppercase">
           {chapter.number > 1 ? (
             <Link
               href={`/read/${book.slug}/${chapter.number - 1}`}
-              className="flex items-center gap-2 text-[#9E3E26] hover:underline"
+              className="flex items-center gap-1 sm:gap-2 text-[#9E3E26] hover:underline"
             >
               <ArrowLeft size={14} />
               <span>Chapter {chapter.number - 1}</span>
@@ -233,14 +233,14 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
             <span className="text-[#8E887E]">Opening Chapter</span>
           )}
 
-          <span className="text-[#8E887E]">
-            {chapter.number} of {totalChapters} Chapters
+          <span className="text-[#8E887E] text-center">
+            {chapter.number} / {totalChapters}
           </span>
 
           {chapter.number < totalChapters ? (
             <Link
               href={`/read/${book.slug}/${chapter.number + 1}`}
-              className="flex items-center gap-2 text-[#9E3E26] hover:underline"
+              className="flex items-center gap-1 sm:gap-2 text-[#9E3E26] hover:underline"
             >
               <span>Chapter {chapter.number + 1}</span>
               <ArrowRight size={14} />
@@ -252,7 +252,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
       </main>
 
       {/* Docked Chapter Audio Player Bar */}
-      <div className="sticky bottom-4 z-40 max-w-3xl mx-auto px-4">
+      <div className="sticky bottom-4 z-40 max-w-3xl mx-auto px-4 pb-2">
         <AudioPlayerBar
           audioKey={chapter.audio_key}
           textToSpeak={chapter.content_html}
