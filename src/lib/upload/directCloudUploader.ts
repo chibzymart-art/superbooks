@@ -192,41 +192,66 @@ export async function uploadVideoToCloud(
   // 2. Direct browser-to-Stream upload with XHR tracking
   emit('uploading', 10, 0, 0, 'Streaming chunks directly to Cloudflare global video network...');
 
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', uploadUrl, true);
-
-    const formData = new FormData();
-    formData.append('file', blob, filename);
-
+  if (uploadUrl.startsWith('/')) {
+    // In local/preview mock mode: simulate multi-chunk transmission to avoid Vercel 4.5MB body limit
     const startTime = Date.now();
+    for (let p = 15; p <= 95; p += 20) {
+      await new Promise((r) => setTimeout(r, 100));
+      const loaded = Math.round((p / 100) * totalBytes);
+      const elapsedSec = (Date.now() - startTime) / 1000;
+      const speedMbps = elapsedSec > 0 ? (loaded * 8) / (elapsedSec * 1024 * 1024) : 34.5;
+      emit(
+        'uploading',
+        p,
+        loaded,
+        Math.round(speedMbps * 10) / 10,
+        `Streaming: ${(loaded / (1024 * 1024)).toFixed(1)} MB / ${(totalBytes / (1024 * 1024)).toFixed(1)} MB (${speedMbps.toFixed(1)} Mbps)`
+      );
+    }
 
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const percent = Math.min(95, 10 + Math.round((e.loaded / e.total) * 85));
-        const elapsedSec = (Date.now() - startTime) / 1000;
-        const speedMbps = elapsedSec > 0 ? (e.loaded * 8) / (elapsedSec * 1024 * 1024) : 0;
-        emit(
-          'uploading',
-          percent,
-          e.loaded,
-          Math.round(speedMbps * 10) / 10,
-          `Streaming: ${(e.loaded / (1024 * 1024)).toFixed(1)} MB / ${(e.total / (1024 * 1024)).toFixed(1)} MB (${speedMbps.toFixed(1)} Mbps)`
-        );
-      }
-    };
+    await fetch(uploadUrl, {
+      method: 'POST',
+      body: JSON.stringify({ filename, sizeBytes: totalBytes }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } else {
+    // Live Cloudflare Stream Direct Creator Upload
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', uploadUrl, true);
 
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve();
-      } else {
-        reject(new Error(`Cloudflare Stream upload returned status ${xhr.status}: ${xhr.statusText}`));
-      }
-    };
+      const formData = new FormData();
+      formData.append('file', blob, filename);
 
-    xhr.onerror = () => reject(new Error('Network error during direct Cloudflare Stream transmission'));
-    xhr.send(formData);
-  });
+      const startTime = Date.now();
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.min(95, 10 + Math.round((e.loaded / e.total) * 85));
+          const elapsedSec = (Date.now() - startTime) / 1000;
+          const speedMbps = elapsedSec > 0 ? (e.loaded * 8) / (elapsedSec * 1024 * 1024) : 0;
+          emit(
+            'uploading',
+            percent,
+            e.loaded,
+            Math.round(speedMbps * 10) / 10,
+            `Streaming: ${(e.loaded / (1024 * 1024)).toFixed(1)} MB / ${(e.total / (1024 * 1024)).toFixed(1)} MB (${speedMbps.toFixed(1)} Mbps)`
+          );
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Cloudflare Stream upload returned status ${xhr.status}: ${xhr.statusText}`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error('Network error during direct Cloudflare Stream transmission'));
+      xhr.send(formData);
+    });
+  }
 
   emit('completed', 100, totalBytes, 0, `Direct-to-Stream ingestion confirmed: UID ${streamUid}`);
 
