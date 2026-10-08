@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --background: #F9F6F0;
+  --foreground: #1B1A17;
+  --color-paper: #F9F6F0;
+  --color-paper-light: #FFFDF9;
+  --color-paper-card: #F3ECE1;
+  --color-paper-dark: #E6DCCE;
+  --color-paper-border: #DFD5C6;
+  --color-ink: #1B1A17;
+  --color-ink-muted: #5C5850;
+  --color-ink-light: #8E887E;
+  --color-terracotta: #9E3E26;
+  --color-terracotta-hover: #822F1B;
+  --color-terracotta-light: #FBF0EC;
+  --color-laurel: #25473A;
+  --color-laurel-light: #EEF4F0;
+  --color-ochre: #C68936;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, sans-serif;
+  background-image: 
+    radial-gradient(#DFD5C6 0.75px, transparent 0.75px),
+    radial-gradient(#DFD5C6 0.75px, #F9F6F0 0.75px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle physical paper deckle shadow */
+.shadow-book-spine {
+  box-shadow: 
+    -4px 0 8px -2px rgba(27, 26, 23, 0.15),
+    0 12px 28px -6px rgba(27, 26, 23, 0.22),
+    0 2px 4px rgba(27, 26, 23, 0.08);
+}
+
+.shadow-book-stacked {
+  box-shadow: 
+    -6px 6px 14px -3px rgba(27, 26, 23, 0.18),
+    -12px 12px 24px -6px rgba(27, 26, 23, 0.12);
+}
+
+/* Reader Typography */
+.drop-cap:first-letter {
+  font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+  float: left;
+  font-size: 3.8rem;
+  line-height: 0.85;
+  padding-top: 4px;
+  padding-right: 12px;
+  padding-bottom: 2px;
+  color: #9E3E26;
+  font-weight: 700;
+}
+
+.prose-editorial p {
+  margin-bottom: 1.6rem;
+  line-height: 1.85;
+  font-size: 1.15rem;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.prose-editorial p.lead {
+  font-size: 1.35rem;
+  line-height: 1.8;
+  font-style: italic;
+  color: #1B1A17;
+  border-left: 2px solid #9E3E26;
+  padding-left: 1rem;
+}
+
+/* Custom scrollbar styled like a bookmark spine */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F3ECE1;
+}
+::-webkit-scrollbar-thumb {
+  background: #DFD5C6;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9E3E26;
+}
