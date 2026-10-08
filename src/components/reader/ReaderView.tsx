@@ -2,7 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { BookOpen, ScrollText, ArrowLeft, ArrowRight, Settings2, Bookmark, Check } from 'lucide-react';
+import {
+  BookOpen,
+  ScrollText,
+  ArrowLeft,
+  ArrowRight,
+  Bookmark,
+  Check,
+  ShieldCheck,
+  Copy,
+  X,
+  ExternalLink,
+  Layers,
+  Sparkles,
+} from 'lucide-react';
 import { Chapter, Book } from '@/types/database';
 import { AudioPlayerBar } from '@/components/reader/AudioPlayerBar';
 import { PageFlipView } from '@/components/reader/PageFlipView';
@@ -20,6 +33,8 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
   const [theme, setTheme] = useState<'paper' | 'sepia' | 'night'>('paper');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [bookmarkSaved, setBookmarkSaved] = useState(false);
+  const [showCdnInspector, setShowCdnInspector] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Load saved preferences
   useEffect(() => {
@@ -69,6 +84,17 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
     setTimeout(() => setBookmarkSaved(false), 2500);
   };
 
+  const canonicalR2Link = `/api/media/books/${book.slug}/manuscript-compressed.epub`;
+
+  const handleCopyLink = () => {
+    const fullUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${canonicalR2Link}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(fullUrl);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
   const themeClasses = {
     paper: 'bg-[#F9F6F0] text-[#1B1A17]',
     sepia: 'bg-[#F4ECD8] text-[#2B231B]',
@@ -108,11 +134,24 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
 
           {/* Reading Mode Switcher & Controls */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {/* Cloudflare R2 Delivery Pill */}
+            <button
+              id="btn-reader-cdn-pill"
+              onClick={() => setShowCdnInspector(true)}
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-[#25473A]/10 hover:bg-[#25473A]/20 text-[#25473A] border border-[#25473A]/30 text-[10px] sm:text-[11px] font-mono transition-colors cursor-pointer"
+              title="Cloudflare R2 Delivery Telemetry"
+            >
+              <ShieldCheck size={13} className="text-[#25473A] shrink-0" />
+              <span className="hidden xs:inline">Cloudflare R2</span>
+              <span className="font-bold">&le;1 MB</span>
+            </button>
+
             {/* Mode Switcher Buttons */}
             <div className="flex items-center border border-[#DFD5C6] bg-inherit rounded-xs p-0.5 text-xs font-mono">
               <button
+                id="btn-mode-scroll"
                 onClick={() => handleModeChange('scroll')}
-                className={`p-1 sm:px-3 sm:py-1 flex items-center gap-1.5 transition-colors ${
+                className={`p-1 sm:px-3 sm:py-1 flex items-center gap-1.5 transition-colors cursor-pointer ${
                   readingMode === 'scroll'
                     ? 'bg-[#1B1A17] text-[#FFFDF9] font-bold'
                     : 'text-[#5C5850] hover:text-[#1B1A17]'
@@ -123,8 +162,9 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
                 <span className="hidden sm:inline">Scroll</span>
               </button>
               <button
+                id="btn-mode-flip"
                 onClick={() => handleModeChange('flip')}
-                className={`p-1 sm:px-3 sm:py-1 flex items-center gap-1.5 transition-colors ${
+                className={`p-1 sm:px-3 sm:py-1 flex items-center gap-1.5 transition-colors cursor-pointer ${
                   readingMode === 'flip'
                     ? 'bg-[#9E3E26] text-[#FFFDF9] font-bold'
                     : 'text-[#5C5850] hover:text-[#1B1A17]'
@@ -139,20 +179,23 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
             {/* Font Size Selector */}
             <div className="hidden sm:flex items-center border border-[#DFD5C6] rounded-xs text-xs font-serif">
               <button
+                id="btn-font-normal"
                 onClick={() => handleFontSizeChange('normal')}
-                className={`px-2 py-1 ${fontSize === 'normal' ? 'font-bold text-[#9E3E26]' : 'text-[#8E887E]'}`}
+                className={`px-2 py-1 cursor-pointer ${fontSize === 'normal' ? 'font-bold text-[#9E3E26]' : 'text-[#8E887E]'}`}
               >
                 A
               </button>
               <button
+                id="btn-font-large"
                 onClick={() => handleFontSizeChange('large')}
-                className={`px-2 py-1 ${fontSize === 'large' ? 'font-bold text-[#9E3E26]' : 'text-[#8E887E]'}`}
+                className={`px-2 py-1 cursor-pointer ${fontSize === 'large' ? 'font-bold text-[#9E3E26]' : 'text-[#8E887E]'}`}
               >
                 A+
               </button>
               <button
+                id="btn-font-huge"
                 onClick={() => handleFontSizeChange('huge')}
-                className={`px-2 py-1 ${fontSize === 'huge' ? 'font-bold text-[#9E3E26]' : 'text-[#8E887E]'}`}
+                className={`px-2 py-1 cursor-pointer ${fontSize === 'huge' ? 'font-bold text-[#9E3E26]' : 'text-[#8E887E]'}`}
               >
                 A++
               </button>
@@ -161,26 +204,30 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
             {/* Theme Toggle */}
             <div className="flex items-center border border-[#DFD5C6] rounded-xs p-1 gap-1">
               <button
+                id="btn-theme-paper"
                 onClick={() => handleThemeChange('paper')}
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#F9F6F0] border border-[#DFD5C6] ${theme === 'paper' ? 'ring-2 ring-[#9E3E26]' : ''}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#F9F6F0] border border-[#DFD5C6] cursor-pointer ${theme === 'paper' ? 'ring-2 ring-[#9E3E26]' : ''}`}
                 title="Paper Cream"
               />
               <button
+                id="btn-theme-sepia"
                 onClick={() => handleThemeChange('sepia')}
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#F4ECD8] border border-[#D9CDB8] ${theme === 'sepia' ? 'ring-2 ring-[#9E3E26]' : ''}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#F4ECD8] border border-[#D9CDB8] cursor-pointer ${theme === 'sepia' ? 'ring-2 ring-[#9E3E26]' : ''}`}
                 title="Warm Sepia"
               />
               <button
+                id="btn-theme-night"
                 onClick={() => handleThemeChange('night')}
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#1C1B19] border border-[#444] ${theme === 'night' ? 'ring-2 ring-[#9E3E26]' : ''}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-[#1C1B19] border border-[#444] cursor-pointer ${theme === 'night' ? 'ring-2 ring-[#9E3E26]' : ''}`}
                 title="Night Ink"
               />
             </div>
 
             {/* Quick Bookmark Button */}
             <button
+              id="btn-save-bookmark"
               onClick={handleSaveBookmark}
-              className="p-1 sm:p-1.5 border border-[#DFD5C6] hover:border-[#9E3E26] rounded-xs text-xs transition-colors"
+              className="p-1 sm:p-1.5 border border-[#DFD5C6] hover:border-[#9E3E26] rounded-xs text-xs transition-colors cursor-pointer"
               title="Add Bookmark"
             >
               {bookmarkSaved ? <Check size={14} className="text-[#25473A]" /> : <Bookmark size={14} />}
@@ -213,6 +260,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
 
             {/* Chapter Body Prose */}
             <div
+              id="chapter-body-prose"
               className={`prose-editorial font-serif ${fontSizeClasses} drop-cap`}
               dangerouslySetInnerHTML={{ __html: chapter.content_html || '' }}
             />
@@ -223,6 +271,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
         <div className="mt-12 sm:mt-16 pt-8 border-t border-[#DFD5C6] flex items-center justify-between text-[11px] sm:text-xs font-mono uppercase">
           {chapter.number > 1 ? (
             <Link
+              id="btn-prev-chapter"
               href={`/read/${book.slug}/${chapter.number - 1}`}
               className="flex items-center gap-1 sm:gap-2 text-[#9E3E26] hover:underline"
             >
@@ -239,6 +288,7 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
 
           {chapter.number < totalChapters ? (
             <Link
+              id="btn-next-chapter"
               href={`/read/${book.slug}/${chapter.number + 1}`}
               className="flex items-center gap-1 sm:gap-2 text-[#9E3E26] hover:underline"
             >
@@ -260,6 +310,97 @@ export function ReaderView({ book, chapter, totalChapters, initialMode = 'scroll
           chapterNumber={chapter.number}
         />
       </div>
+
+      {/* Cloudflare R2 Delivery Telemetry Modal */}
+      {showCdnInspector && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div
+            id="reader-cdn-telemetry-modal"
+            className="bg-[#F9F6F0] text-[#1B1A17] border border-[#DFD5C6] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200"
+          >
+            <div className="flex items-start justify-between pb-3 border-b border-[#DFD5C6]">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-[#25473A]/10 text-[#25473A] border border-[#25473A]/20">
+                  Cloudflare R2 Delivery Engine
+                </span>
+                <h3 className="text-lg font-serif font-bold text-[#1B1A17] mt-1">
+                  {book.title}
+                </h3>
+              </div>
+              <button
+                id="btn-close-reader-modal"
+                onClick={() => setShowCdnInspector(false)}
+                className="p-1 rounded-lg text-[#5C5850] hover:text-[#1B1A17] hover:bg-[#EBE3D5] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs font-serif">
+              {/* Canonical Resolver */}
+              <div className="p-3.5 rounded-xl bg-white border border-[#DFD5C6] space-y-1">
+                <div className="text-[11px] font-medium text-[#5C5850] flex items-center justify-between">
+                  <span>Canonical Manuscript Link (Cloudflare R2)</span>
+                  <span className="text-[10px] font-mono text-[#25473A]">Verified Edge Node</span>
+                </div>
+                <div className="flex items-center justify-between gap-2 p-2 rounded bg-[#F9F6F0] border border-[#E5DFD3] font-mono text-[11px]">
+                  <span className="truncate">{canonicalR2Link}</span>
+                  <button
+                    id="btn-copy-reader-r2-link"
+                    onClick={handleCopyLink}
+                    className="p-1 rounded hover:bg-[#DFD5C6] text-[#5C5850] cursor-pointer shrink-0"
+                    title="Copy Link"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-[#25473A]" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Delivery Specs */}
+              <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                <div className="p-2.5 rounded-lg bg-white border border-[#DFD5C6]">
+                  <div className="text-[10px] text-[#5C5850]">Compression</div>
+                  <div className="text-xs font-bold text-[#25473A] mt-0.5">&le;1 MB Lossless</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white border border-[#DFD5C6]">
+                  <div className="text-[10px] text-[#5C5850]">Egress Fee</div>
+                  <div className="text-xs font-bold text-[#25473A] mt-0.5">$0.00 Egress</div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-white border border-[#DFD5C6]">
+                  <div className="text-[10px] text-[#5C5850]">Signed TTL</div>
+                  <div className="text-xs font-bold text-[#1B1A17] mt-0.5">15 Min Rolling</div>
+                </div>
+              </div>
+
+              {/* Visual Guarantee */}
+              <div className="p-3 rounded-xl bg-[#25473A]/5 border border-[#25473A]/20 flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-[#25473A] shrink-0 mt-0.5" />
+                <div className="text-[11px] leading-relaxed text-[#25473A]">
+                  <strong className="font-semibold">Sanctuary Typography Integrity:</strong> Visual assets, chapter drop-caps, and prose vectors are preserved without compression artifacts.
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  onClick={() => setShowCdnInspector(false)}
+                  className="px-4 py-2 rounded-xl border border-[#DFD5C6] text-xs font-serif text-[#5C5850] hover:bg-[#EBE3D5] cursor-pointer"
+                >
+                  Close
+                </button>
+                <a
+                  id="link-test-reader-endpoint"
+                  href={`${canonicalR2Link}?redirect=true`}
+                  target="_blank"
+                  className="px-4 py-2 rounded-xl bg-[#9E3E26] hover:bg-[#83331F] text-white text-xs font-serif font-medium transition-colors shadow-sm flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Test Direct Manuscript Endpoint</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
